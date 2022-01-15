@@ -4,14 +4,20 @@ const io = require('socket.io')(http);
 const express = require("express");
 app.use(express.static("Public"));
 
+const users = {}
 
 io.on('connection', function(socket){
-    console.log("Nouvel utilisateur connecté")
+    socket.on('new-user', function (name){
+        
+        users[socket.id] = name;
+        socket.broadcast.emit('user-connected', name);
+    })
     socket.on('disconnect', function (){
-        console.log('utilisateur déconnecté');
+        
+        socket.broadcast.emit('user-disconnect', users[socket.id]);
     })
     socket.on('chat message', function (msg){
-        io.emit('chat message', msg);
+        io.emit('chat message', `${users[socket.id]} : ${msg}`);
     })
 
 })
